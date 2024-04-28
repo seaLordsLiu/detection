@@ -1,0 +1,30 @@
+--- ## 日志信息
+logging:
+  # 限制了权限，如果更换地址，需要检查服务器上是否有权限
+  path: /var/log/java
+
+--- ## 数据库连接信息
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://101.34.206.121:3306/concentration_camp?preserveInstants=true&connectionTimeZone=Asia/Shanghai
+    username: root
+    password: lxw1998
+    # 参考地址: https://github.com/brettwooldridge/HikariCP#frequently-used
+    hikari:
+      pool-name: resource-pool-mysql-hikari-connection
+      auto-commit: true
+      #等待连接的最大毫秒数默认值：30000（30 秒）
+      connection-timeout: 20000
+      #此属性控制允许连接在池中空闲的最长时间
+      idle-timeout: 600000
+      #此属性控制 HikariCP 尝试保持连接活动的频率 必须小于该 maxLifetime值 5分钟
+      keepalive-time: 300000
+      #此属性控制池中连接的最大生命周期 10分钟
+      max-lifetime: 600000
+      #此属性控制池允许达到的最大大小 默认10
+      maximum-pool-size: 20
+      # 控制 HikariCP 尝试在池中维护的最小空闲连接数 默认10
+      minimum-idle: 20
+      #检测sql
+      connectionInit-sql: SELECT 1 FROM DUAL

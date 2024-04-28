@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- 引用 Spring Boot 的 logback 基础配置 -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml" />
+
+    <!--  日志格式  -->
+    <property name="pattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} -%msg%n" />
+
+    <!-- 引文从 Spring 环境中获取，并且可以根据应用程序的配置文件或系统属性进行修改 -->
+    <springProperty scope="context" name="spring.application.name" source="spring.application.name"/>
+    <springProperty scope="context" name="logging.path" source="logging.path"/>
+
+    <!-- 日志地址 -->
+    <property name="log_file" value="${logging.path}/${spring.application.name}" />
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="ch.qos.logback.classic.PatternLayout">
+                <Pattern>${pattern}</Pattern>
+            </layout>
+        </encoder>
+    </appender>
+
+    <!-- 本地、开发环境，日志配置 可以写logback支持的所有节点 -->
+    <springProfile name="!prod">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE" />
+        </root>
+    </springProfile>
+
+    <!-- 线上环境，日志配置 -->
+    <springProfile name="prod">
+        <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <append>true</append>
+            <!--  设置临界值  -->
+            <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+                <level>INFO</level>
+            </filter>
+            <file>${log_file}/access.log</file>
+
+            <!-- 日志文件生成策略 -->
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <!-- 日志文件输出的文件名 -->
+                <fileNamePattern>${log_file}/access.%d{yyyy-MM-dd}.log</fileNamePattern>
+                <!-- 日志文件保留天数-->
+                <maxHistory>7</maxHistory>
+                <!-- 总日志文件大小限制 -->
+                <totalSizeCap>1GB</totalSizeCap>
+            </rollingPolicy>
+
+            <!-- 日志滚动配置 -->
+            <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+                <maxFileSize>20MB</maxFileSize>
+            </triggeringPolicy>
+
+            <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+                <layout class="ch.qos.logback.classic.PatternLayout">
+                    <pattern>${pattern}</pattern>
+                </layout>
+            </encoder>
+        </appender>
+
+        <!--  配置异步打印  -->
+        <appender name="ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+            <appender-ref ref="FILE" />
+            <!--  指定队列中可以被丢弃的事件数量阈值。当队列中的事件数量达到该阈值时，新的事件将被丢弃。默认值为512  -->
+            <discardingThreshold>0</discardingThreshold>
+            <!-- 指定队列的大小, 默认256 -->
+            <queueSize>256</queueSize>
+            <!-- 队列满时, 是否允许丢弃, 设置为true以后 neverBlock失效, 会创建一个无大小限制队列-->
+            <neverBlock>false</neverBlock>
+        </appender>
+
+        <root level="INFO">
+            <!--日志输出到文件-->
+            <appender-ref ref="ASYNC"/>
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+</configuration>

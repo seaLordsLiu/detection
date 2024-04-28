@@ -1,0 +1,11 @@
+server:
+  port: 18443
+
+spring:
+  application:
+    name: detection-demo
+
+  profiles:
+    active: local
+
+
